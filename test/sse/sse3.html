@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h3>案例1: 异步任务</h3>
+<input type="text" id="sessionId" placeholder="请输入sessionId">
+<button onclick="submitTask()">我要买包子()</button>
+<div id="result"></div>
+
+
+<script>
+
+    async function submitTask(){
+
+        console.log('我要买包子');
+        const input = document.getElementById('sessionId');
+        let sessionId = input.value
+        const res = await fetch('http://127.0.0.1:8001/submit/' + sessionId);
+
+        const resultDom = document.getElementById('result');
+        if (res.status === 200) {
+            const data = await res.json();
+            resultDom.innerHTML += data.message + '<br/>';
+        }
+
+        console.log('做好一个给我一个');
+        //初始化事件源(监听)对象
+        const eventSource = new EventSource('http://127.0.0.1:8001/stream/' + sessionId);
+
+        //3. 定义事件监听
+        eventSource.onmessage = function (event) {
+            resultDom.innerHTML += event.data + '<br/>';
+        }
+    }
+
+</script>
+</body>
+</html>

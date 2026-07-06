@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h3>案例2: 动态传参</h3>
+<input type="text" id="sessionId" placeholder="请输入sessionId">
+<button onclick="connectSSE()">使用SSE🔗服务器</button>
+<div id="result"></div>
+
+
+<script>
+
+    function connectSSE(){
+
+        console.log('开始监听SSE事件');
+        const input = document.getElementById('sessionId');
+        let sessionId = input.value
+
+        //1.初始化事件源(监听)对象
+        const eventSource = new EventSource('http://127.0.0.1:8001/stream/' + sessionId);
+        //2.内容输出DOM
+        const resultDom = document.getElementById('result');
+
+        //3. 定义事件监听
+        eventSource.onmessage = function (event) {
+            if(event.data === '[END]'){
+                eventSource.close();
+                return;
+            }
+            resultDom.innerHTML += event.data + '<br/>';
+        }
+    }
+
+</script>
+</body>
+</html>

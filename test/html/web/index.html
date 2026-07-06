@@ -1,0 +1,100 @@
+<!--文档头: html5标准-->
+<!DOCTYPE html>
+<!--
+根节点
+lang = "en" 面向搜索引擎
+<html> 标签
+lang 属性
+"en" 属性值
+-->
+<html lang="en">
+<!--头节点：不显示在浏览器中-->
+<head>
+    <!--
+    meta: 元数据
+    charset: 字符集
+    UTF-8：万国码
+    ISO-8859-1：拉丁文
+    GBK：简体中文和繁体中文
+    GB2312：简体中文
+    -->
+    <meta charset="UTF-8">
+    <meta name="keywords" content="HTML, CSS, XML, XHTML, JavaScript">
+    <meta name="description" content="免费 Web & 编程 教程">
+    <title>我是标题</title>
+
+
+
+    <style>
+        /* 注释 */
+
+        /*标签名*/
+        div {
+            background-color: #00ffcc;
+            color: #bc13fe;
+        }
+
+        /*id*/
+        #p1{
+            color:pink;
+            margin-left:20px;
+            margin-top:0;
+            margin-bottom:0;
+        }
+
+        /*class*/
+        .p3{
+            color:yellow;
+        }
+    </style>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<!--内容节点-->
+<body>
+1112222<br>你好！<br/>Tout vient à point à qui sait attendre.<br>
+
+
+<!--块级元素、标签-->
+<h1 id="h1" title="这是一个h1标题">这是一个标题</h1>
+<hr>
+<h2 id="h2">这是一个标题</h2>
+<h3 class="h">这是一个标题</h3>
+<h4 class="h">这是一个标题</h4>
+<h5>这是一个标题</h5>
+<h6>这是一个标题</h6>
+
+<p id="p1">这是一个段落。<img
+        src="/knowledge_base/test/html/images/logo.png"/>Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+    Asperiores assumenda at commodi, corporis cumque ducimus facere hic impedit, incidunt inventore odio officiis optio
+    quas, quasi qui quo saepe sed tempora.</p>
+
+<!--style color 定义文字颜色的-->
+
+<p style="color:red;margin-left:20px;margin-top:0;margin-bottom:0;">这是另外一个段落。Lorem ipsum dolor sit amet,
+    consectetur adipisicing elit. A accusamus ad aliquam, aperiam at aut cum delectus eum facere fuga fugiat illo
+    laudantium minima nihil obcaecati saepe, sit veritatis vero!</p>
+
+
+<p class="p3" style="color: #00f3ff">这是另外一个段落。Lorem ipsum dolor sit amet,
+    consectetur adipisicing elit. A accusamus ad aliquam, aperiam at aut cum delectus eum facere fuga fugiat illo
+    laudantium minima nihil obcaecati saepe, sit veritatis vero!</p>
+<div>这是一个块级元素。<a href="https://www.baidu.com" target="_blank">这是一个链接1</a>也叫分区 分区1</div>
+<div>这是一个块级元素。也叫分区 分区2</div>
+<div>这是一个块级元素。也叫分区 分区3</div>
+<div>这是一个块级元素。也叫分区 分区4</div>
+
+<!--内联元素-->
+<a href="https://www.baidu.com" target="_blank" title="访问baidu网站">这是一个链接1</a><br>
+<a href="https://www.baidu.com">这是一个链接2</a><br>
+<a href="https://www.baidu.com">这是一个链接2</a><br>
+
+<!--根路径：从主机后面开始 有 /  -->
+<img src="/knowledge_base/test/html/images/logo.png"/>
+<!--绝对路径-->
+<img src="http://localhost:63342/knowledge_base/test/html/images/logo.png" width="258"/>
+<!--相对路径：从主机后面开始 没有 /  -->
+<img src="../images/logo111.png" width="258" height="39" alt="这是alt" title="这是一张图片"/>
+
+
+</body>
+</html>

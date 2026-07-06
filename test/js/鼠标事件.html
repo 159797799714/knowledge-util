@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>菜鸟教程(runoob.com)</title>
+<script>
+function bigImg(x){
+	x.style.height="64px";
+	x.style.width="64px";
+}
+function normalImg(x){
+	x.style.height="32px";
+	x.style.width="32px";
+}
+</script>
+</head>
+<body>
+
+<img onmouseover="bigImg(this)" onmouseout="normalImg(this)" border="0" src="smiley.gif" alt="Smiley" width="32" height="32">
+<p>函数 bigImg() 在鼠标指针移动到笑脸图片是触发。</p>
+<p>函数 normalImg() 在鼠标指针移出笑脸图片是触发.</p>
+
+</body>
+</html>

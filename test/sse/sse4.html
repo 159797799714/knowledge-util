@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h3>案例1: 异步任务</h3>
+<input type="text" id="queryInput" placeholder="请输入你的问题">
+<button onclick="submitQuery()">发送</button>
+<div id="result"></div>
+
+
+<script>
+    async function submitQuery(){
+
+        console.log('提问');
+        // 1. 获取用户问题
+        const queryInput = document.getElementById('queryInput').value;
+        let sessionId = "query_" + Date.now()
+
+        // 2. 提交问题
+        // 默认是get
+        // 可以改为其他： post、put、delete
+        const res = await fetch('http://127.0.0.1:8001/submit_query', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            //注意：请求体中的内容要先转换成字符串
+            body: JSON.stringify({
+                query: queryInput,
+                session_id: sessionId
+            })
+        });
+
+
+        // 3. 解析响应
+        const resultDom = document.getElementById('result');
+        if (res.status === 200) {
+            const data = await res.json();
+            resultDom.innerHTML += data.message + '<br/>';
+        }
+
+        // 4. 订阅问题的答案
+        //初始化事件源(监听)对象
+        const eventSource = new EventSource('http://127.0.0.1:8001/stream/' + sessionId);
+
+        // 5. 定义事件监听
+        eventSource.onmessage = function (event) {
+            resultDom.innerHTML += event.data + '<br/>';
+        }
+    }
+
+</script>
+</body>
+</html>

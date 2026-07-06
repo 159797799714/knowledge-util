@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <!--  浏览器中有一个JavaScript解释器，对加载的html页面中的js代码进行逐行解释执行  -->
+    <script>
+        // var是古老的写法，现在用的是let和const
+        // let h = document.getElementById("h")
+        // 页面弹窗
+        // window.alert('hahahaha')
+    </script>
+</head>
+<body>
+<h1 id="h">大标题</h1>
+
+<button onclick="clickMe()">快来点我</button>
+
+<script>
+    let h = document.getElementById("h")
+
+    // 控制台输出
+    console.log(h)
+
+    //h: 是一个文档对象 Document Object
+    //使用javascript操作文档对象：DOM操作
+    console.dir(h)
+
+    // h.innerText= '小标题<img src="logo.png">'
+    h.innerHTML= '小标题<img src="logo.png">'
+
+    // document.writeln('随便写点啥')
+
+
+    function clickMe(){
+        alert('点击了')
+    }
+
+
+</script>
+</body>
+</html>

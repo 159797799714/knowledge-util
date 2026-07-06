@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>前端页面</title>
+</head>
+<body>
+我的静态页面<img src="a.png" alt="logo">
+
+
+<!--显示结果-->
+<p id="r"></p>
+<button onclick="send()">发送远程请求</button>
+
+<script>
+    async function send() {
+
+        //获取一个DOM对象
+        const r  = document.getElementById('r')
+        try {
+            // 1. 发送远程请求
+            // 承诺对象:promise
+            const res = await fetch('http://127.0.0.1:8001/api/data');
+            console.log("下一步1")
+            console.log("res", res);
+
+            // 2. 获取相应数据并解析结果
+            const data = await res.json();
+            console.log("下一步2")
+            console.log("data", data);
+
+            // 3. 显示结果
+            r.innerText = "成功:" + JSON.stringify(data);
+        } catch (e) {
+            r.innerText = "失败:" + e.message;
+        }
+    }
+</script>
+</body>
+</html>
