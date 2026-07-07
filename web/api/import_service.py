@@ -2,8 +2,12 @@
 导入流程的API接口定义
 """
 import os
+import sys
 import shutil
 import uuid
+
+# 将项目根目录加入 Python 模块搜索路径，确保子目录中运行时也能找到 config 等模块
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 from datetime import datetime
 from pathlib import Path
 from typing import List, Dict, Any
@@ -201,4 +205,4 @@ async def get_task_progress(task_id: str):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app=app,host="127.0.0.1",port=8000)
+    uvicorn.run(app=app,host="0.0.0.0",port=8000)

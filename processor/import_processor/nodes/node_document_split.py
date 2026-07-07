@@ -1,6 +1,7 @@
 # processor/import_processor/nodes/node_document_split.py
 import json
 import logging
+import os
 import re
 from pathlib import Path
 from typing import Tuple, List, Dict
@@ -67,7 +68,7 @@ class NodeDocumentSplit(BaseNode):
 
         try:
             # 拼接备份文件路径：固定文件名，便于查找
-            backup_path = Path("D:/output") / state.get("file_title") / "chunks.json"
+            backup_path = Path(os.environ.get("DATA_BASED_ROOT_DIR", "./output")) / state.get("file_title") / "chunks.json"
             # 写入JSON文件：保留中文/格式化缩进，便于人工查看
             with open(backup_path, "w", encoding="utf-8") as f:
                 """

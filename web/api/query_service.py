@@ -1,8 +1,13 @@
 """
 查询流程的接口定义
 """
+import os
+import sys
 import uuid
 from pathlib import Path
+
+# 将项目根目录加入 Python 模块搜索路径，确保子目录中运行时也能找到 config 等模块
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 import uvicorn
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
@@ -176,4 +181,4 @@ async def health():
     return {"ok": True}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8001)
