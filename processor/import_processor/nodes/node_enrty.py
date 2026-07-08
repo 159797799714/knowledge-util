@@ -41,7 +41,7 @@ class NodeEntry(BaseNode):
         else:
             raise ValidationError(message=f"不支持的文件类型{import_file_path_obj.suffix}")
 
-        #4. 获取文件名作为标题
+        #4. 获取文件名作为标题 .stem用于去掉后缀名的纯文件名
         state["file_title"] = import_file_path_obj.stem
 
         return state

@@ -69,6 +69,7 @@ class NodeDocumentSplit(BaseNode):
         try:
             # 拼接备份文件路径：固定文件名，便于查找
             backup_path = Path(os.environ.get("DATA_BASED_ROOT_DIR", "./output")) / state.get("file_title") / "chunks.json"
+            
             # 写入JSON文件：保留中文/格式化缩进，便于人工查看
             with open(backup_path, "w", encoding="utf-8") as f:
                 """
@@ -77,6 +78,20 @@ class NodeDocumentSplit(BaseNode):
                 json.dump的核心作用就是：将 Python 原生数据结构（列表、字典、字符串、数字等）直接序列化并写入 JSON 文件，无需手动转换为字符串，
                 同时保证数据格式规范、可跨语言 / 跨场景读取，完美适配「Chunk 列表备份」的需求。
                 """
+
+                """
+                json.dump (obj, f) 完整作用拆解(核心两件事)
+                    1、序列化：把 Python 字典、列表、数字、字符串等对象，转换成标准 JSON 文本字符串；
+                    2、写入文件：直接把转换好的 JSON 文本写到打开的文件流 fp 里，不用自己拼接字符串。 
+                    
+                    # json.dump(obj, f)：直接把 Python 对象写入文件，区别于 json.dumps()（只返回字符串）
+                    # 一步到位，序列化 + 写入文件，少写一行代码
+
+                    等同于 
+                    text = json.dumps(sections, ensure_ascii=False, indent=2)
+                    f.write(text)  # 需要自己手动写文件
+                """
+               
                 json.dump(
                     sections,
                     f,

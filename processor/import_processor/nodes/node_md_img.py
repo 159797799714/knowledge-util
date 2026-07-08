@@ -64,6 +64,8 @@ class NodeMDImg(BaseNode):
         # 步骤5：备份并保存新MD文件
         new_md_file_name = self._step_5_backup_new_md_file(state['md_path'], new_md_content)
 
+        self.logger.info(f"######### {self.name} 【{new_md_content}】 #########")
+
         # 步骤6：更新state状态值
         state["md_content"] = new_md_content
         state["md_path"] = new_md_file_name
