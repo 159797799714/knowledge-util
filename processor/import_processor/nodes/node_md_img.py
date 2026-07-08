@@ -47,6 +47,9 @@ class NodeMDImg(BaseNode):
         md_content, md_path_obj, images_dir = self._step_1_get_content(state)
         if not images_dir.exists():
             self.logger.info("无图片文件夹，跳过图片处理")
+
+        # 步骤6：更新state状态值
+            state["md_content"] = md_content
             return state
 
         # 步骤2：扫描并筛选MD中引用的图片
