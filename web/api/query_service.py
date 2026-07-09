@@ -22,6 +22,7 @@ from utils.sse_utils import create_sse_queue, SSEEvent, push_to_session, sse_gen
 from utils.task_utils import update_task_status, TASK_STATUS_PROCESSING, get_task_result, TASK_STATUS_COMPLETED, \
     TASK_STATUS_FAILED
 from utils.jwt_utils import create_access_token, get_current_user
+from utils.redis_utils import get_user_info, verify_user, init_redis_users
 from tool.logger import logger
 # 1. 创建应用
 app = FastAPI(
@@ -47,14 +48,15 @@ class RegisterRequest(BaseModel):
     username: str = Field(..., description="用户名")
 
 
+@app.on_event("startup")
+async def startup_event():
+    init_redis_users()
+
+
 @app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
 async def register(request: RegisterRequest):
-    valid_users = {
-        "admin": "admin123",
-        "user": "user123"
-    }
-    
-    if request.username not in valid_users:
+    user_info = get_user_info(request.username)
+    if not user_info:
         raise HTTPException(status_code=401, detail="用户不存在")
     
     access_token = create_access_token(data={"sub": request.username})
@@ -63,12 +65,7 @@ async def register(request: RegisterRequest):
 
 @app.post("/login", summary="登录接口", description="用户登录验证")
 async def login(request: LoginRequest):
-    valid_users = {
-        "admin": "admin123",
-        "user": "user123"
-    }
-    
-    if request.username not in valid_users or request.password != valid_users[request.username]:
+    if not verify_user(request.username, request.password):
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     
     return {"message": "登录成功", "username": request.username}

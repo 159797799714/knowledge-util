@@ -7,6 +7,7 @@ dependencies = [
     "colorlog>=6.10.1",
     "fastapi>=0.136.1",
     "pyjwt>=2.8.0",
+    "redis>=5.0.0",
     "grandalf>=0.8",
     "langchain>=1.2.16",
     "langchain-openai>=1.2.1",
