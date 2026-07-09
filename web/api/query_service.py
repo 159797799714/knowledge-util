@@ -55,9 +55,6 @@ async def startup_event():
 
 @app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
 async def register(request: RegisterRequest):
-    user_info = get_user_info(request.username)
-    if not user_info:
-        raise HTTPException(status_code=401, detail="用户不存在")
     
     access_token = create_access_token(data={"sub": request.username})
     return {"access_token": access_token, "token_type": "bearer"}
