@@ -18,13 +18,14 @@ from config.minio_config import minio_config
 from processor.import_processor.main_graph import KBImportWorkflow
 from tool.logger import logger
 import uvicorn
-from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File
+from fastapi import FastAPI, HTTPException, BackgroundTasks, UploadFile, File, Depends
 from starlette.middleware.cors import CORSMiddleware
-
+from pydantic import BaseModel, Field
 
 from utils.minio_utils import get_minio_client
 from utils.task_utils import add_running_task, add_done_task, update_task_status, get_task_status, get_done_task_list, \
     get_running_task_list
+from utils.jwt_utils import create_access_token, get_current_user
 
 # 1. 创建应用
 # 标题和描述会在Swagger文档中展示
@@ -41,6 +42,42 @@ app.add_middleware(
     allow_methods=["*"],  # 允许的请求方法
     allow_headers=["*"],  # 允许的请求头
 )
+
+class LoginRequest(BaseModel):
+    username: str = Field(..., description="用户名")
+    password: str = Field(..., description="密码")
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(..., description="用户名")
+
+
+@app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
+async def register(request: RegisterRequest):
+    valid_users = {
+        "admin": "admin123",
+        "user": "user123"
+    }
+    
+    if request.username not in valid_users:
+        raise HTTPException(status_code=401, detail="用户不存在")
+    
+    access_token = create_access_token(data={"sub": request.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/login", summary="登录接口", description="用户登录验证")
+async def login(request: LoginRequest):
+    valid_users = {
+        "admin": "admin123",
+        "user": "user123"
+    }
+    
+    if request.username not in valid_users or request.password != valid_users[request.username]:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
+    
+    return {"message": "登录成功", "username": request.username}
+
 
 # 3. 静态页面路由：返回文件导入前端页面
 # 访问地址：http://localhost:8000/import.html
@@ -99,7 +136,8 @@ def run_graph_task(task_id: str, file_dir: str, import_file_path: str):
 # 支持多文件上传，核心流程：接收文件 → 本地保存 → MinIO上传 → 启动后台任务
 # 访问地址：http://localhost:8000/upload （POST请求，form-data格式传参）
 @app.post("/upload", summary="文件上传接口", description="支持多文件批量上传，自动触发知识库导入全流程")
-async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...)):
+async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...),
+                       current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     文件上传核心接口
     1. 接收前端上传的多文件（PDF/MD为主）
@@ -181,7 +219,7 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
 # 前端轮询此接口获取单个任务的处理进度和状态
 # 访问地址：http://localhost:8000/status/{task_id} （GET请求）
 @app.get("/status/{task_id}", summary="任务状态查询", description="根据TaskID查询单个文件的处理进度和全局状态")
-async def get_task_progress(task_id: str):
+async def get_task_progress(task_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     任务状态查询接口
     前端轮询此接口（如每秒1次），获取任务的实时处理进度

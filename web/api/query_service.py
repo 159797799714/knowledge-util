@@ -5,12 +5,13 @@ import os
 import sys
 import uuid
 from pathlib import Path
+from typing import Dict, Any
 
 # 将项目根目录加入 Python 模块搜索路径，确保子目录中运行时也能找到 config 等模块
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, BackgroundTasks, Request
+from fastapi import FastAPI, HTTPException, BackgroundTasks, Request, Depends
 from pydantic import BaseModel, Field
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import FileResponse, StreamingResponse
@@ -20,6 +21,7 @@ from utils.mongo_history_utils import clear_history, get_recent_messages
 from utils.sse_utils import create_sse_queue, SSEEvent, push_to_session, sse_generator
 from utils.task_utils import update_task_status, TASK_STATUS_PROCESSING, get_task_result, TASK_STATUS_COMPLETED, \
     TASK_STATUS_FAILED
+from utils.jwt_utils import create_access_token, get_current_user
 from tool.logger import logger
 # 1. 创建应用
 app = FastAPI(
@@ -35,6 +37,42 @@ app.add_middleware(
     allow_methods=["*"],  # 允许的请求方法
     allow_headers=["*"],  # 允许的请求头
 )
+
+class LoginRequest(BaseModel):
+    username: str = Field(..., description="用户名")
+    password: str = Field(..., description="密码")
+
+
+class RegisterRequest(BaseModel):
+    username: str = Field(..., description="用户名")
+
+
+@app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
+async def register(request: RegisterRequest):
+    valid_users = {
+        "admin": "admin123",
+        "user": "user123"
+    }
+    
+    if request.username not in valid_users:
+        raise HTTPException(status_code=401, detail="用户不存在")
+    
+    access_token = create_access_token(data={"sub": request.username})
+    return {"access_token": access_token, "token_type": "bearer"}
+
+
+@app.post("/login", summary="登录接口", description="用户登录验证")
+async def login(request: LoginRequest):
+    valid_users = {
+        "admin": "admin123",
+        "user": "user123"
+    }
+    
+    if request.username not in valid_users or request.password != valid_users[request.username]:
+        raise HTTPException(status_code=401, detail="用户名或密码错误")
+    
+    return {"message": "登录成功", "username": request.username}
+
 
 # 3. 静态页面路由
 @app.get("/chat.html")  # 对外访问地址
@@ -55,7 +93,8 @@ class QueryRequest(BaseModel):
     is_stream: bool = Field(False, description="是否流式返回")
 
 @app.post("/query")
-async def query(background_tasks: BackgroundTasks, request: QueryRequest):
+async def query(background_tasks: BackgroundTasks, request: QueryRequest,
+                current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     1 解析参数
     2 更新任务状态
@@ -125,7 +164,8 @@ def run_query_graph(session_id: str, user_query: str, is_stream: bool = True):
 
 
 @app.get("/stream/{session_id}")
-async def stream(session_id: str, request: Request):
+async def stream(session_id: str, request: Request,
+                 current_user: Dict[str, Any] = Depends(get_current_user)):
 
     print("调用流式/stream...")
     """
@@ -142,7 +182,7 @@ async def stream(session_id: str, request: Request):
     )
 
 @app.delete("/history/{session_id}")
-async def clear_chat_history(session_id: str):
+async def clear_chat_history(session_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     清空指定会话的历史记录
     """
@@ -150,7 +190,7 @@ async def clear_chat_history(session_id: str):
     return {"message": "历史会话已清空", "deleted_count": count}
 
 @app.get("/history/{session_id}")
-async def history(session_id: str, limit: int = 50):
+async def history(session_id: str, limit: int = 50, current_user: Dict[str, Any] = Depends(get_current_user)):
     """
     查询当前会话历史记录
     """
