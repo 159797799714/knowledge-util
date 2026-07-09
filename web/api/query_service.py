@@ -68,15 +68,15 @@ async def login(request: LoginRequest):
     if not verify_user(request.username, request.password):
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     
-    return {"message": "登录成功", "username": request.username}
+    access_token = create_access_token(data={"sub": request.username})
+    return {"message": "登录成功", "username": request.username, "access_token": access_token, "token_type": "bearer"}
 
 
 # 3. 静态页面路由
-@app.get("/chat.html")  # 对外访问地址
-async def chat():
+@app.get("/chat.html")
+async def chat(current_user: Dict[str, Any] = Depends(get_current_user)):
     current_dir_parent_path = Path(__file__).absolute().parent.parent
     html_path = current_dir_parent_path / "page" / "chat.html"
-    # 如果不存在，抛出404异常
     if not html_path.exists():
         raise HTTPException(status_code=404, detail=f"没有查询到页面，地址为：{html_path}")
     return FileResponse(html_path)
