@@ -56,7 +56,15 @@ class RegisterRequest(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
-    init_default_users()
+    """
+    应用启动时初始化默认用户
+    已添加异常处理，避免服务重启时报错
+    """
+    try:
+        init_default_users()
+        logger.info("Default users initialization completed")
+    except Exception as e:
+        logger.warning(f"Failed to initialize default users: {e}. Service will continue to start.")
 
 
 @app.post("/register", summary="注册/获取Token接口", description="用户注册并获取JWT Token")

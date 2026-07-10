@@ -86,13 +86,24 @@ def verify_password(username: str, password: str) -> bool:
 
 
 def init_default_users():
+    """
+    初始化默认用户
+    服务启动时调用，确保默认用户存在
+    已添加异常处理，避免重复启动时报错
+    """
     default_users = [
         {"username": "admin", "password": "admin123", "role": "admin"},
         {"username": "user", "password": "user123", "role": "user"}
     ]
     for user in default_users:
-        result = register_user(user["username"], user["password"], user["role"])
-        if result == RegisterResult.SUCCESS:
-            logging.info(f"Default user created: {user['username']}")
-        elif result == RegisterResult.USER_EXISTS:
-            logging.info(f"Default user already exists: {user['username']}")
+        try:
+            result = register_user(user["username"], user["password"], user["role"])
+            if result == RegisterResult.SUCCESS:
+                logging.info(f"Default user created: {user['username']}")
+            elif result == RegisterResult.USER_EXISTS:
+                logging.info(f"Default user already exists: {user['username']}")
+            elif result == RegisterResult.ERROR:
+                logging.warning(f"Failed to create default user: {user['username']}")
+        except Exception as e:
+            # 捕获可能的数据库异常（如唯一索引冲突等）
+            logging.warning(f"Error initializing default user {user['username']}: {e}. This is expected if user already exists.")
