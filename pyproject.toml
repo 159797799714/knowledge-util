@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
+    "bcrypt>=4.2.0",
     "colorlog>=6.10.1",
     "fastapi>=0.136.1",
     "pyjwt>=2.8.0",

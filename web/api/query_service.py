@@ -18,11 +18,11 @@ from starlette.responses import FileResponse, StreamingResponse
 
 from processor.query_processor.main_graph import KBQueryWorkflow
 from utils.mongo_history_utils import clear_history, get_recent_messages
+from utils.mongo_user_utils import register_user, verify_password, get_user_by_username, init_default_users, RegisterResult
 from utils.sse_utils import create_sse_queue, SSEEvent, push_to_session, sse_generator
 from utils.task_utils import update_task_status, TASK_STATUS_PROCESSING, get_task_result, TASK_STATUS_COMPLETED, \
     TASK_STATUS_FAILED
 from utils.jwt_utils import create_access_token, get_current_user
-from utils.redis_utils import get_user_info, verify_user, init_redis_users
 from tool.logger import logger
 # 1. 创建应用
 app = FastAPI(
@@ -46,15 +46,21 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., description="用户名")
+    password: str = Field(..., description="密码")
 
 
 @app.on_event("startup")
 async def startup_event():
-    init_redis_users()
+    init_default_users()
 
 
-@app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
+@app.post("/register", summary="注册/获取Token接口", description="用户注册并获取JWT Token")
 async def register(request: RegisterRequest):
+    result = register_user(request.username, request.password)
+    if result == RegisterResult.USER_EXISTS:
+        raise HTTPException(status_code=400, detail="用户名已存在")
+    elif result == RegisterResult.ERROR:
+        raise HTTPException(status_code=500, detail="注册失败，请稍后重试")
     
     access_token = create_access_token(data={"sub": request.username})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -62,7 +68,7 @@ async def register(request: RegisterRequest):
 
 @app.post("/login", summary="登录接口", description="用户登录验证")
 async def login(request: LoginRequest):
-    if not verify_user(request.username, request.password):
+    if not verify_password(request.username, request.password):
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     
     access_token = create_access_token(data={"sub": request.username})

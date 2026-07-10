@@ -23,10 +23,10 @@ from starlette.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from utils.minio_utils import get_minio_client
+from utils.mongo_user_utils import register_user, verify_password, get_user_by_username, init_default_users, RegisterResult
 from utils.task_utils import add_running_task, add_done_task, update_task_status, get_task_status, get_done_task_list, \
     get_running_task_list
 from utils.jwt_utils import create_access_token, get_current_user
-from utils.redis_utils import get_user_info, verify_user, init_redis_users
 
 # 1. 创建应用
 # 标题和描述会在Swagger文档中展示
@@ -51,18 +51,21 @@ class LoginRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str = Field(..., description="用户名")
+    password: str = Field(..., description="密码")
 
 
 @app.on_event("startup")
 async def startup_event():
-    init_redis_users()
+    init_default_users()
 
 
-@app.post("/register", summary="注册/获取Token接口", description="用户注册或获取JWT Token")
+@app.post("/register", summary="注册/获取Token接口", description="用户注册并获取JWT Token")
 async def register(request: RegisterRequest):
-    user_info = get_user_info(request.username)
-    if not user_info:
-        raise HTTPException(status_code=401, detail="用户不存在")
+    result = register_user(request.username, request.password)
+    if result == RegisterResult.USER_EXISTS:
+        raise HTTPException(status_code=400, detail="用户名已存在")
+    elif result == RegisterResult.ERROR:
+        raise HTTPException(status_code=500, detail="注册失败，请稍后重试")
     
     access_token = create_access_token(data={"sub": request.username})
     return {"access_token": access_token, "token_type": "bearer"}
@@ -70,10 +73,11 @@ async def register(request: RegisterRequest):
 
 @app.post("/login", summary="登录接口", description="用户登录验证")
 async def login(request: LoginRequest):
-    if not verify_user(request.username, request.password):
+    if not verify_password(request.username, request.password):
         raise HTTPException(status_code=401, detail="用户名或密码错误")
     
-    return {"message": "登录成功", "username": request.username}
+    access_token = create_access_token(data={"sub": request.username})
+    return {"message": "登录成功", "username": request.username, "access_token": access_token, "token_type": "bearer"}
 
 
 # 3. 静态页面路由：返回文件导入前端页面
