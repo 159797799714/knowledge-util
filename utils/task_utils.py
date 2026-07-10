@@ -69,17 +69,18 @@ def add_running_task(task_id: str, node_name: str, is_stream: bool = False) -> N
 
 def add_done_task(task_id: str, node_name: str, is_stream: bool = False) -> None:
     """
-    添加“已完成”的节点任务。
+    添加"已完成"的节点任务。
 
-    注意：添加已完成任务时，会把同名的“正在运行”任务删除。
+    注意：添加已完成任务时，会把同名的"正在运行"任务删除。
 
     参数：
     - task_id: 任务ID
     - node_name: 节点名称(节点ID)
     """
     redis_remove_running_task(task_id, node_name)
-    done_list = get_done_task_list(task_id)
-    if node_name not in done_list:
+    # 先获取原始的节点名列表进行去重检查
+    done_raw_list = redis_get_done_tasks(task_id)
+    if node_name not in done_raw_list:
         redis_add_done_task(task_id, node_name)
     if is_stream:
         task_push_queue(task_id)
