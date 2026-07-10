@@ -137,8 +137,7 @@ def run_graph_task(task_id: str, file_dir: str, import_file_path: str):
 # 支持多文件上传，核心流程：接收文件 → 本地保存 → MinIO上传 → 启动后台任务
 # 访问地址：http://localhost:8000/upload （POST请求，form-data格式传参）
 @app.post("/upload", summary="文件上传接口", description="支持多文件批量上传，自动触发知识库导入全流程")
-async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...),
-                       current_user: Dict[str, Any] = Depends(get_current_user)):
+async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile] = File(...)):
     """
     文件上传核心接口
     1. 接收前端上传的多文件（PDF/MD为主）
@@ -220,7 +219,7 @@ async def upload_files(background_tasks: BackgroundTasks, files: List[UploadFile
 # 前端轮询此接口获取单个任务的处理进度和状态
 # 访问地址：http://localhost:8000/status/{task_id} （GET请求）
 @app.get("/status/{task_id}", summary="任务状态查询", description="根据TaskID查询单个文件的处理进度和全局状态")
-async def get_task_progress(task_id: str, current_user: Dict[str, Any] = Depends(get_current_user)):
+async def get_task_progress(task_id: str):
     """
     任务状态查询接口
     前端轮询此接口（如每秒1次），获取任务的实时处理进度
